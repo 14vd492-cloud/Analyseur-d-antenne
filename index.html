@@ -1,1786 +1,419 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Analyseur d'antenne</title>
-
 <style>
-
-* {
-    box-sizing: border-box;
-}
-
-body {
-    margin: 0;
-    font-family: Arial, Helvetica, sans-serif;
-    background: linear-gradient(135deg, #071a2e, #123b63);
-    color: white;
-    min-height: 100vh;
-}
-
-.container {
-    width: 92%;
-    max-width: 1050px;
-    margin: 35px auto;
-}
-
-.header {
-    background: linear-gradient(135deg, #164b7a, #216da8);
-    border-radius: 18px;
-    padding: 30px;
-    text-align: center;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.25);
-}
-
-.header h1 {
-    margin: 0 0 12px;
-    font-size: 34px;
-}
-
-.header p {
-    margin: 0;
-    font-size: 17px;
-    line-height: 1.5;
-}
-
-.card {
-    background: rgba(10,32,54,0.97);
-    border-radius: 18px;
-    padding: 25px;
-    margin-top: 25px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.25);
-}
-
-.card h2 {
-    margin-top: 0;
-    color: #72c7ff;
-}
-
-.grid {
-    display: grid;
-    grid-template-columns: repeat(2,1fr);
-    gap: 18px;
-}
-
-.field {
-    display: flex;
-    flex-direction: column;
-}
-
-label {
-    font-weight: bold;
-    margin-bottom: 7px;
-}
-
-input,
-select {
-    width: 100%;
-    padding: 12px;
-    border: none;
-    border-radius: 9px;
-    font-size: 16px;
-    background: white;
-    color: #111;
-}
-
-.unit {
-    font-size: 13px;
-    color: #a9c9df;
-    margin-top: 5px;
-}
-
-.description {
-    background: rgba(70,150,210,0.12);
-    border-left: 4px solid #55baff;
-    padding: 14px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    line-height: 1.55;
-}
-
-.buttons {
-    display: flex;
-    gap: 15px;
-    margin-top: 25px;
-    flex-wrap: wrap;
-}
-
-button {
-    border: none;
-    border-radius: 10px;
-    padding: 14px 24px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.2s;
-}
-
-button:hover {
-    transform: translateY(-1px);
-}
-
-.analyser {
-    background: #18c86b;
-    color: white;
-}
-
-.analyser:hover {
-    background: #12a957;
-}
-
-.reset {
-    background: #53687a;
-    color: white;
-}
-
-.reset:hover {
-    background: #405362;
-}
-
-.correct {
-    background: #1689d7;
-    color: white;
-}
-
-#resultat {
-    display: none;
-}
-
-.result-box {
-    border-radius: 15px;
-    padding: 22px;
-    margin-top: 15px;
-}
-
-.result-green {
-    background: #0d5c38;
-    border: 2px solid #1fd17a;
-}
-
-.result-orange {
-    background: #694a0b;
-    border: 2px solid #f5b942;
-}
-
-.result-red {
-    background: #681d25;
-    border: 2px solid #ff6875;
-}
-
-.result-title {
-    font-size: 25px;
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
-.stats {
-    display: grid;
-    grid-template-columns: repeat(3,1fr);
-    gap: 12px;
-    margin-top: 20px;
-}
-
-.stat {
-    background: rgba(255,255,255,0.08);
-    border-radius: 10px;
-    padding: 15px;
-    text-align: center;
-}
-
-.stat strong {
-    display: block;
-    font-size: 20px;
-    margin-bottom: 5px;
-}
-
-.analysis-list {
-    margin-top: 20px;
-    line-height: 1.7;
-}
-
-.analysis-list div {
-    padding: 8px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-}
-
-.suggestions {
-    margin-top: 25px;
-    background: rgba(120,30,40,0.20);
-    border: 2px solid #ff5b68;
-    border-radius: 15px;
-    padding: 20px;
-}
-
-.suggestions h3 {
-    color: #ff707b;
-    margin-top: 0;
-}
-
-.modification {
-    background: rgba(255,255,255,0.07);
-    border-radius: 12px;
-    padding: 16px;
-    margin-top: 14px;
-}
-
-.modification-title {
-    font-size: 18px;
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
-.current {
-    color: #ff6571;
-    font-weight: bold;
-}
-
-.recommended {
-    color: #55e89a;
-    font-weight: bold;
-}
-
-.arrow {
-    font-size: 20px;
-    margin: 0 8px;
-}
-
-.reason {
-    margin-top: 10px;
-    color: #d7e8f5;
-    line-height: 1.55;
-}
-
-.good {
-    background: rgba(20,180,100,0.14);
-    border: 2px solid #26d982;
-    border-radius: 15px;
-    padding: 18px;
-    margin-top: 25px;
-}
-
-.good h3 {
-    margin-top: 0;
-    color: #55e89a;
-}
-
-.warning {
-    background: rgba(255,180,40,0.12);
-    border-left: 4px solid #f5b942;
-    padding: 15px;
-    border-radius: 8px;
-    margin-top: 20px;
-    line-height: 1.6;
-}
-
-.info {
-    background: rgba(57,126,180,0.18);
-    border-left: 4px solid #55baff;
-    padding: 15px;
-    border-radius: 8px;
-    margin-top: 20px;
-    line-height: 1.6;
-}
-
-.hidden {
-    display: none;
-}
-
-.footer {
-    text-align: center;
-    color: #a9c9df;
-    font-size: 13px;
-    margin: 25px 0;
-}
-
-@media (max-width:700px) {
-
-    .grid,
-    .stats {
-        grid-template-columns: 1fr;
-    }
-
-    .header h1 {
-        font-size: 27px;
-    }
-
-    .container {
-        width: 95%;
-    }
-}
-
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(135deg,#071a2e,#123b63);color:#fff;min-height:100vh}
+.container{width:92%;max-width:1100px;margin:30px auto}
+.header,.card{background:rgba(10,32,54,.97);border-radius:18px;padding:25px;margin-top:20px;box-shadow:0 8px 25px rgba(0,0,0,.25)}
+.header{background:linear-gradient(135deg,#164b7a,#216da8);text-align:center;padding:30px}
+.header h1{margin:0 0 10px;font-size:34px}.header p{margin:0;font-size:17px;line-height:1.5}
+.card h2{margin-top:0;color:#72c7ff}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+.field{display:flex;flex-direction:column}label{font-weight:bold;margin-bottom:7px}
+input,select{width:100%;padding:12px;border:2px solid transparent;border-radius:9px;font-size:16px;background:#fff;color:#111}
+input.error,select.error{border-color:#ff5364;background:#fff0f2;box-shadow:0 0 0 2px rgba(255,83,100,.15)}
+input.ok,select.ok{border-color:#20d37a}
+.unit{font-size:13px;color:#a9c9df;margin-top:5px}
+.description,.info,.warning{padding:15px;border-radius:9px;line-height:1.55;margin-bottom:20px}
+.description,.info{background:rgba(70,150,210,.12);border-left:4px solid #55baff}
+.warning{background:rgba(255,180,40,.12);border-left:4px solid #f5b942;margin-top:20px}
+.buttons{display:flex;gap:15px;margin-top:25px;flex-wrap:wrap}
+button{border:0;border-radius:10px;padding:14px 24px;font-size:16px;font-weight:bold;cursor:pointer}
+.analyser{background:#18c86b;color:#fff}.reset{background:#53687a;color:#fff}.correct{background:#1689d7;color:#fff}
+.hidden{display:none!important}
+#resultat{display:none}
+.result-box{border-radius:15px;padding:22px;margin-top:15px}
+.result-green{background:#0d5c38;border:2px solid #1fd17a}.result-orange{background:#694a0b;border:2px solid #f5b942}.result-red{background:#681d25;border:2px solid #ff6875}
+.result-title{font-size:25px;font-weight:bold;margin-bottom:10px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:20px}
+.stat{background:rgba(255,255,255,.08);border-radius:10px;padding:15px;text-align:center}.stat strong{display:block;font-size:20px;margin-bottom:5px}
+.analysis-list{margin-top:20px;line-height:1.7}.analysis-list div{padding:9px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+.suggestions{margin-top:25px;background:rgba(120,30,40,.20);border:2px solid #ff5b68;border-radius:15px;padding:20px}
+.suggestions h3{color:#ff707b;margin-top:0}.modification{background:rgba(255,255,255,.07);border-radius:12px;padding:16px;margin-top:14px}
+.modification-title{font-size:18px;font-weight:bold;margin-bottom:10px}.current{color:#ff6571;font-weight:bold}.recommended{color:#55e89a;font-weight:bold}.arrow{font-size:20px;margin:0 8px}.reason{margin-top:10px;color:#d7e8f5;line-height:1.55}
+.good{background:rgba(20,180,100,.14);border:2px solid #26d982;border-radius:15px;padding:18px;margin-top:25px}.good h3{margin-top:0;color:#55e89a}
+.bad-field{margin-top:10px;color:#ff8a94;font-weight:bold}
+.footer{text-align:center;color:#a9c9df;font-size:13px;margin:25px 0}
+@media(max-width:750px){.grid,.stats{grid-template-columns:1fr}.header h1{font-size:27px}.container{width:95%}}
 </style>
-
 </head>
-
-
 <body>
-
-
 <div class="container">
 
-
-<!-- =====================================================
-     EN-TÊTE
-===================================================== -->
-
 <div class="header">
-
 <h1>📡 Analyseur d'antenne</h1>
-
-<p>
-Entrez votre configuration et découvrez si elle est
-cohérente, puis voyez précisément ce qui peut être modifié.
-</p>
-
+<p>Entrez votre configuration et découvrez si elle est cohérente, puis voyez précisément <strong>quoi modifier</strong>.</p>
 </div>
-
-
-<!-- =====================================================
-     CONFIGURATION
-===================================================== -->
 
 <div class="card">
-
 <h2>🔧 Configuration de l'antenne</h2>
-
-
 <div class="description">
-
-<strong>Première étape :</strong>
-choisissez le type d'antenne.
-
-L'analyseur adaptera ensuite ses calculs et ses conseils
-à cette configuration.
-
+<strong>Principe :</strong> l'application réalise une première analyse théorique.
+Elle distingue notamment un <strong>V inversé / dipôle</strong>, qui fonctionne avec ses deux brins et
+<strong>sans plan de masse</strong>, d'une <strong>verticale ¼ onde</strong>, qui nécessite un retour RF
+(radiaIes, contrepoids ou sol adapté).<br><br>
+Les champs qui posent problème sont signalés <strong style="color:#ff6571">en rouge</strong> et la correction proposée est affichée <strong style="color:#55e89a">en vert</strong>.
 </div>
-
 
 <div class="grid">
 
-
-<!-- TYPE -->
-
 <div class="field">
-
-<label for="typeAntenne">
-Type d'antenne
-</label>
-
-<select
-id="typeAntenne"
-onchange="changerTypeAntenne()"
->
-
-<option value="dipole">
-Dipôle
-</option>
-
-<option value="invertedV" selected>
-V inversé
-</option>
-
-<option value="vertical">
-Vertical ¼ onde avec contrepoids
-</option>
-
-<option value="efhw">
-EFHW — fil demi-onde alimenté par une extrémité
-</option>
-
+<label for="typeAntenne">Type d'antenne</label>
+<select id="typeAntenne" onchange="changerTypeAntenne()">
+<option value="dipole">Dipôle demi-onde</option>
+<option value="invertedV" selected>V inversé demi-onde</option>
+<option value="vertical">Vertical ¼ onde avec contrepoids</option>
+<option value="efhw">EFHW — fil demi-onde alimenté par une extrémité</option>
 </select>
-
 </div>
-
-
-<!-- FREQUENCE -->
 
 <div class="field">
-
-<label for="frequence">
-Fréquence
-</label>
-
-<input
-type="number"
-id="frequence"
-value="27.555"
-min="0.1"
-step="0.001"
->
-
-<div class="unit">
-MHz
+<label for="frequence">Fréquence</label>
+<input type="number" id="frequence" value="27.000" min="0.1" step="0.001">
+<div class="unit">MHz</div>
 </div>
-
-</div>
-
-
-<!-- LONGUEUR -->
 
 <div class="field">
-
-<label id="labelLongueur" for="longueur">
-Longueur de chaque brin
-</label>
-
-<input
-type="number"
-id="longueur"
-value="2.72"
-min="0"
-step="0.01"
->
-
-<div class="unit">
-mètres
+<label id="labelLongueur" for="longueur">Longueur de chaque brin</label>
+<input type="number" id="longueur" value="5.56" min="0" step="0.01">
+<div class="unit">mètres</div>
 </div>
 
+<div class="field" id="zoneContrepoids">
+<label for="nombreContrepoids">Nombre de contrepoids</label>
+<input type="number" id="nombreContrepoids" value="3" min="0" max="50" step="1">
+<div class="unit">fils</div>
 </div>
 
-
-<!-- NOMBRE CONTREPOIDS -->
-
-<div
-class="field"
-id="zoneContrepoids"
->
-
-<label for="nombreContrepoids">
-Nombre de contrepoids
-</label>
-
-<input
-type="number"
-id="nombreContrepoids"
-value="0"
-min="0"
-max="50"
-step="1"
->
-
-<div class="unit">
-fils
+<div class="field" id="zoneLongueurContrepoids">
+<label for="longueurContrepoids">Longueur de chaque contrepoids</label>
+<input type="number" id="longueurContrepoids" value="2.78" min="0" step="0.01">
+<div class="unit">mètres</div>
 </div>
-
-</div>
-
-
-<!-- LONGUEUR CONTREPOIDS -->
-
-<div
-class="field"
-id="zoneLongueurContrepoids"
->
-
-<label for="longueurContrepoids">
-Longueur de chaque contrepoids
-</label>
-
-<input
-type="number"
-id="longueurContrepoids"
-value="0"
-min="0"
-step="0.01"
->
-
-<div class="unit">
-mètres
-</div>
-
-</div>
-
-
-<!-- HAUTEUR -->
 
 <div class="field">
-
-<label for="hauteur">
-Hauteur du point d'alimentation
-</label>
-
-<input
-type="number"
-id="hauteur"
-value="5"
-min="0"
-step="0.1"
->
-
-<div class="unit">
-mètres
+<label for="hauteur">Hauteur du point d'alimentation</label>
+<input type="number" id="hauteur" value="5" min="0" step="0.1">
+<div class="unit">mètres</div>
 </div>
-
-</div>
-
-
-<!-- BALUN -->
 
 <div class="field">
-
-<label for="balun">
-Balun / transformateur
-</label>
-
+<label for="balun">Balun / transformateur</label>
 <select id="balun">
-
-<option value="aucun">
-Aucun
-</option>
-
-<option value="1:1" selected>
-Balun 1:1
-</option>
-
-<option value="9:1">
-Transformateur 9:1
-</option>
-
-<option value="49:1">
-Transformateur 49:1
-</option>
-
-<option value="autre">
-Autre
-</option>
-
+<option value="aucun">Aucun</option>
+<option value="1:1" selected>Balun 1:1</option>
+<option value="9:1">Transformateur 9:1</option>
+<option value="49:1">Transformateur 49:1</option>
+<option value="autre">Autre</option>
 </select>
-
 </div>
-
-
-<!-- CHOKE -->
 
 <div class="field">
-
-<label for="choke">
-Choke RF
-</label>
-
+<label for="choke">Choke RF</label>
 <select id="choke">
-
-<option value="non" selected>
-Non
-</option>
-
-<option value="oui">
-Oui
-</option>
-
+<option value="non" selected>Non</option>
+<option value="oui">Oui</option>
 </select>
-
 </div>
 
-
 </div>
-
 
 <div class="buttons">
-
-<button
-class="analyser"
-onclick="analyserAntenne()"
->
-
-🔎 ANALYSER MON ANTENNE
-
-</button>
-
-
-<button
-class="reset"
-onclick="reinitialiser()"
->
-
-↺ Réinitialiser
-
-</button>
-
+<button class="analyser" onclick="analyserAntenne()">🔎 ANALYSER MON ANTENNE</button>
+<button class="reset" onclick="reinitialiser()">↺ Réinitialiser</button>
+</div>
 </div>
 
+<div class="card" id="resultat">
+<h2>📊 Résultat de l'analyse</h2>
+<div id="boiteResultat" class="result-box">
+<div id="titreResultat" class="result-title"></div>
+<div id="messageResultat"></div>
+<div id="champProbleme"></div>
 </div>
-
-
-<!-- =====================================================
-     RESULTAT
-===================================================== -->
-
-<div
-class="card"
-id="resultat"
->
-
-<h2>
-📊 Résultat de l'analyse
-</h2>
-
-
-<div
-id="boiteResultat"
-class="result-box"
->
-
-<div
-id="titreResultat"
-class="result-title"
-></div>
-
-<div
-id="messageResultat"
-></div>
-
-</div>
-
-
-<!-- STATISTIQUES -->
 
 <div class="stats">
-
-<div class="stat">
-
-<strong id="lambda">
---
-</strong>
-
-Longueur d'onde
-
+<div class="stat"><strong id="lambda">—</strong>Longueur d'onde</div>
+<div class="stat"><strong id="quart">—</strong>¼ onde</div>
+<div class="stat"><strong id="demi">—</strong>½ onde</div>
+<div class="stat"><strong id="total">—</strong>Longueur utilisée</div>
 </div>
 
+<div class="analysis-list" id="detailsAnalyse"></div>
 
-<div class="stat">
-
-<strong id="quart">
---
-</strong>
-
-¼ onde
-
-</div>
-
-
-<div class="stat">
-
-<strong id="demi">
---
-</strong>
-
-½ onde
-
-</div>
-
-</div>
-
-
-<!-- DETAILS -->
-
-<div
-class="analysis-list"
-id="detailsAnalyse"
-></div>
-
-
-<!-- SUGGESTIONS -->
-
-<div
-id="zoneSuggestions"
-class="suggestions hidden"
->
-
-<h3>
-🔧 Modifications conseillées
-</h3>
-
-<p>
-L'analyse a détecté un élément qui peut être amélioré.
-La valeur actuelle est affichée en rouge et la valeur
-conseillée en vert.
-</p>
-
+<div id="zoneSuggestions" class="suggestions hidden">
+<h3>🔧 Modifications conseillées</h3>
+<p>Voici exactement ce qui peut être modifié. <span style="color:#ff6571;font-weight:bold">Rouge = actuel</span> · <span style="color:#55e89a;font-weight:bold">Vert = conseillé</span>.</p>
 <div id="listeSuggestions"></div>
-
-
 <div class="buttons">
-
-<button
-class="correct"
-onclick="appliquerCorrection()"
->
-
-🔄 VOIR LA CONFIGURATION CONSEILLÉE
-
-</button>
-
+<button class="correct" onclick="appliquerCorrections()">🔄 APPLIQUER LES CORRECTIONS</button>
+</div>
 </div>
 
+<div id="zoneBonneConfiguration" class="good hidden">
+<h3>🟢 Configuration cohérente</h3>
+<p>Les paramètres principaux correspondent au type d'antenne choisi. Cela ne garantit toutefois ni l'impédance exacte ni un ROS précis.</p>
 </div>
-
-
-<!-- BONNE CONFIGURATION -->
-
-<div
-id="zoneBonneConfiguration"
-class="good hidden"
->
-
-<h3>
-🟢 Configuration cohérente
-</h3>
-
-<p>
-Les dimensions principales correspondent correctement
-au type d'antenne sélectionné.
-</p>
-
-</div>
-
-
-<!-- AVERTISSEMENT -->
 
 <div class="warning">
-
-⚠️ <strong>Attention :</strong>
-
-une longueur théorique ne garantit pas à elle seule
-une résonance parfaite ni un ROS donné.
-
-La hauteur, le sol, les objets métalliques,
-l'environnement et le système d'alimentation
-influencent le résultat réel.
-
+⚠️ <strong>Important :</strong> cet outil donne une première analyse théorique.
+La hauteur, l'angle du V, le sol, les objets métalliques, le coaxial et l'environnement peuvent modifier le comportement réel.
+<br><br>
+📏 Le ROS réel doit être contrôlé avec un analyseur d'antenne ou un mesureur de ROS.
+</div>
 </div>
 
-
-<div class="info">
-
-📏 Cette application fournit une <strong>première analyse
-théorique</strong>.
-
-Pour connaître réellement l'impédance et le ROS,
-il faut effectuer une mesure avec un analyseur d'antenne
-ou un mesureur de ROS.
-
+<div class="footer">Analyseur d'antenne — outil radioamateur</div>
 </div>
-
-
-</div>
-
-
-<div class="footer">
-
-Analyseur d'antenne — outil radioamateur
-
-</div>
-
-
-</div>
-
 
 <script>
+let corrections=[];
 
+function el(id){return document.getElementById(id)}
+function num(id){return parseFloat(el(id).value)}
+function formatM(v){return Number(v).toFixed(2)+" m"}
 
-/* =====================================================
-   VARIABLES
-===================================================== */
-
-let correction = null;
-
-
-/* =====================================================
-   CHANGEMENT DE TYPE D'ANTENNE
-===================================================== */
-
-function changerTypeAntenne() {
-
-const type =
-document.getElementById("typeAntenne").value;
-
-
-const zoneContrepoids =
-document.getElementById("zoneContrepoids");
-
-
-const zoneLongueurContrepoids =
-document.getElementById("zoneLongueurContrepoids");
-
-
-const labelLongueur =
-document.getElementById("labelLongueur");
-
-
-const longueur =
-document.getElementById("longueur");
-
-
-/* DIPÔLE */
-
-if (type === "dipole") {
-
-zoneContrepoids.classList.add("hidden");
-
-zoneLongueurContrepoids.classList.add("hidden");
-
-labelLongueur.textContent =
-"Longueur de chaque brin";
-
-longueur.value = "2.72";
-
+function marquer(id,etat){
+  const e=el(id);
+  if(!e)return;
+  e.classList.remove("error","ok");
+  if(etat==="error")e.classList.add("error");
+  if(etat==="ok")e.classList.add("ok");
 }
 
+function changerTypeAntenne(){
+  const type=el("typeAntenne").value;
+  const z1=el("zoneContrepoids"),z2=el("zoneLongueurContrepoids");
+  const label=el("labelLongueur");
 
-/* V INVERSÉ */
-
-if (type === "invertedV") {
-
-zoneContrepoids.classList.add("hidden");
-
-zoneLongueurContrepoids.classList.add("hidden");
-
-labelLongueur.textContent =
-"Longueur de chaque brin";
-
-longueur.value = "2.72";
-
+  if(type==="vertical"){
+    z1.classList.remove("hidden"); z2.classList.remove("hidden");
+    label.textContent="Longueur du fil rayonnant";
+    el("longueur").value="2.78";
+    el("nombreContrepoids").value="3";
+    el("longueurContrepoids").value="2.78";
+  }else if(type==="efhw"){
+    z1.classList.add("hidden"); z2.classList.add("hidden");
+    label.textContent="Longueur totale du fil";
+    el("longueur").value="5.56";
+    el("balun").value="49:1";
+  }else{
+    z1.classList.add("hidden"); z2.classList.add("hidden");
+    label.textContent="Longueur de chaque brin";
+    el("longueur").value="5.56";
+    if(type==="invertedV") el("balun").value="1:1";
+  }
 }
 
-
-/* VERTICAL */
-
-if (type === "vertical") {
-
-zoneContrepoids.classList.remove("hidden");
-
-zoneLongueurContrepoids.classList.remove("hidden");
-
-labelLongueur.textContent =
-"Longueur du fil rayonnant";
-
-longueur.value = "2.72";
-
-document.getElementById(
-"nombreContrepoids"
-).value = "3";
-
-document.getElementById(
-"longueurContrepoids"
-).value = "2.72";
-
+function ajouterCorrection(id,element,actuel,conseille,raison){
+  corrections.push({id,element,actuel,conseille,raison});
+  marquer(id,"error");
 }
 
+function analyserAntenne(){
+  corrections=[];
+  ["frequence","longueur","nombreContrepoids","longueurContrepoids","hauteur","balun","choke"].forEach(id=>marquer(id,null));
 
-/* EFHW */
+  const type=el("typeAntenne").value;
+  const f=num("frequence"), L=num("longueur"), h=num("hauteur");
+  const n=Math.max(0,parseInt(el("nombreContrepoids").value)||0);
+  const Lc=parseFloat(el("longueurContrepoids").value)||0;
+  const balun=el("balun").value;
+  const choke=el("choke").value;
 
-if (type === "efhw") {
+  if(!f || f<=0 || !L || L<=0){
+    alert("Merci de vérifier la fréquence et les longueurs.");
+    return;
+  }
 
-zoneContrepoids.classList.add("hidden");
+  const lambda=300/f, quart=lambda/4, demi=lambda/2;
+  let details=[], score=0, total=L, labelTotal="";
+  const tolBrin=0.05;
+  const proche=(a,b,t=tolBrin)=>Math.abs(a-b)<=b*t;
 
-zoneLongueurContrepoids.classList.add("hidden");
+  el("lambda").textContent=formatM(lambda);
+  el("quart").textContent=formatM(quart);
+  el("demi").textContent=formatM(demi);
 
-labelLongueur.textContent =
-"Longueur totale du fil";
+  if(type==="dipole" || type==="invertedV"){
+    total=L*2; labelTotal="Longueur totale des deux brins";
+    el("total").textContent=formatM(total);
 
-longueur.value = "5.44";
+    if(proche(L,quart)){
+      score+=6;
+      marquer("longueur","ok");
+      details.push("📡 Chaque brin mesure "+formatM(L)+" et est proche du quart d'onde théorique ("+formatM(quart)+").");
+    }else{
+      ajouterCorrection("longueur","Longueur de chaque brin",formatM(L),formatM(quart),
+        type==="invertedV"
+        ?"Pour un V inversé demi-onde, les deux brins forment ensemble environ une demi-onde : chaque brin est proche d'un quart d'onde."
+        :"Pour un dipôle demi-onde, chaque brin est proche d'un quart d'onde.");
+      details.push("⚠️ La longueur de chaque brin est éloignée du quart d'onde.");
+    }
 
-document.getElementById(
-"balun"
-).value = "49:1";
+    details.push(type==="invertedV"
+      ?"📡 V inversé sélectionné : les deux brins constituent l'antenne."
+      :"📡 Dipôle sélectionné : les deux brins constituent l'antenne.");
 
+    details.push("🌍 Aucun plan de masse / contrepoids n'est requis pour cette géométrie dipôle.");
+    details.push(balun==="1:1"
+      ?"🔌 Balun 1:1 sélectionné : cohérent avec une alimentation centrale et utile pour limiter les courants de gaine."
+      :"🔌 Aucun balun 1:1 sélectionné : ce n'est pas automatiquement une erreur, mais un 1:1 est un choix courant au point d'alimentation.");
+
+    if(balun!=="1:1" && balun!=="aucun"){
+      details.push("ℹ️ Le rapport "+balun+" n'est pas nécessaire pour un dipôle/V inversé classique alimenté au centre.");
+    }
+
+    if(h<quart){
+      ajouterCorrection("hauteur","Hauteur du point d'alimentation",formatM(h),"> "+formatM(quart),
+        "Une hauteur supérieure au quart d'onde constitue un point de départ plus intéressant pour cette antenne.");
+    }else{
+      score+=1; marquer("hauteur","ok");
+      details.push("⬆️ Hauteur du point d'alimentation : "+formatM(h)+".");
+    }
+
+    if(choke==="oui") details.push("🛡️ Choke RF présent : il peut aider à limiter les courants de gaine.");
+    else details.push("🛡️ Aucun choke RF sélectionné : ce n'est pas une erreur.");
+
+  }else if(type==="vertical"){
+    total=L+n*Lc; labelTotal="Longueur cumulée indicative";
+    el("total").textContent=formatM(total);
+
+    if(proche(L,quart)){
+      score+=4; marquer("longueur","ok");
+      details.push("📡 Le fil rayonnant est proche du quart d'onde.");
+    }else{
+      ajouterCorrection("longueur","Fil rayonnant",formatM(L),formatM(quart),
+        "Pour une verticale quart d'onde, le brin rayonnant est généralement proche d'un quart d'onde.");
+      details.push("⚠️ Le fil rayonnant s'éloigne du quart d'onde.");
+    }
+
+    if(n>0 && Lc>0){
+      if(proche(Lc,quart,.08)){
+        score+=4; marquer("longueurContrepoids","ok");
+        details.push("🌍 "+n+" contrepoids de "+formatM(Lc)+" sont renseignés.");
+      }else{
+        ajouterCorrection("longueurContrepoids","Longueur de chaque contrepoids",formatM(Lc),formatM(quart),
+          "Pour une verticale quart d'onde, une longueur proche du quart d'onde est un point de départ expérimental courant.");
+        details.push("⚠️ Les contrepoids sont éloignés du quart d'onde.");
+      }
+      marquer("nombreContrepoids","ok");
+    }else{
+      ajouterCorrection("nombreContrepoids","Nombre de contrepoids","0","3",
+        "Une verticale quart d'onde a besoin d'un chemin de retour RF. Des radiales/contrepoids sont un point de départ pratique.");
+      details.push("🔴 Aucun contrepoids n'est renseigné pour cette verticale.");
+    }
+
+    details.push("📡 Verticale ¼ onde : un retour RF est nécessaire.");
+    details.push(balun==="1:1" ? "🔌 Balun 1:1 sélectionné." : "🔌 Adaptation sélectionnée : "+balun+".");
+    details.push(choke==="oui" ? "🛡️ Choke RF présent." : "🛡️ Aucun choke RF sélectionné.");
+    details.push("⬆️ Hauteur du point d'alimentation : "+formatM(h)+".");
+
+  }else if(type==="efhw"){
+    total=L; labelTotal="Longueur totale du fil";
+    el("total").textContent=formatM(total);
+
+    if(proche(L,demi)){
+      score+=6; marquer("longueur","ok");
+      details.push("📡 Le fil est proche d'une demi-onde.");
+    }else{
+      ajouterCorrection("longueur","Longueur totale du fil",formatM(L),formatM(demi),
+        "Une EFHW classique est basée sur une longueur de fil proche d'une demi-onde.");
+      details.push("⚠️ Le fil s'éloigne de la demi-onde.");
+    }
+
+    if(balun==="49:1"){
+      score+=3; marquer("balun","ok");
+      details.push("🔌 Transformateur 49:1 sélectionné : cohérent avec une EFHW classique.");
+    }else{
+      ajouterCorrection("balun","Adaptation",balun==="aucun"?"Aucun":balun,"49:1",
+        "Un transformateur 49:1 est un point de départ courant pour une EFHW demi-onde.");
+      details.push("⚠️ L'adaptation sélectionnée n'est pas le choix classique d'une EFHW.");
+    }
+
+    details.push("🌍 Aucun plan de masse de type verticale ¼ onde n'est requis.");
+    details.push(choke==="oui" ? "🛡️ Choke RF présent." : "🛡️ Aucun choke RF sélectionné.");
+  }
+
+  details.push("📻 Fréquence analysée : "+f.toFixed(3)+" MHz.");
+  details.push("📏 "+labelTotal+" : "+formatM(total)+".");
+
+  let titre,message,classe;
+  if(corrections.length===0){
+    classe="result-green"; titre="🟢 CONFIGURATION COHÉRENTE";
+    message="Les paramètres principaux sont cohérents avec le type d'antenne sélectionné.";
+  }else if(score>=5){
+    classe="result-orange"; titre="🟠 CONFIGURATION À AMÉLIORER";
+    message="L'antenne peut constituer un point de départ, mais une ou plusieurs modifications sont proposées.";
+  }else{
+    classe="result-red"; titre="🔴 CONFIGURATION À MODIFIER";
+    message="Un ou plusieurs paramètres importants doivent être corrigés.";
+  }
+
+  el("boiteResultat").className="result-box "+classe;
+  el("titreResultat").textContent=titre;
+  el("messageResultat").textContent=message;
+
+  el("champProbleme").innerHTML=corrections.length
+    ? "<div class='bad-field'>🔴 "+corrections.length+" modification(s) à vérifier ci-dessous.</div>"
+    : "<div style='color:#55e89a;font-weight:bold;margin-top:10px'>🟢 Aucune correction théorique obligatoire.</div>";
+
+  el("detailsAnalyse").innerHTML=details.map(x=>"<div>"+x+"</div>").join("");
+
+  const zone=el("zoneSuggestions"), bonne=el("zoneBonneConfiguration"), liste=el("listeSuggestions");
+  liste.innerHTML="";
+  if(corrections.length){
+    zone.classList.remove("hidden"); bonne.classList.add("hidden");
+    liste.innerHTML=corrections.map(c=>`
+      <div class="modification">
+        <div class="modification-title">🔧 ${c.element}</div>
+        <div>Actuellement : <span class="current">${c.actuel}</span>
+        <span class="arrow">→</span>
+        Conseillé : <span class="recommended">${c.conseille}</span></div>
+        <div class="reason">💡 ${c.raison}</div>
+      </div>`).join("");
+  }else{
+    zone.classList.add("hidden"); bonne.classList.remove("hidden");
+  }
+
+  el("resultat").style.display="block";
+  el("resultat").scrollIntoView({behavior:"smooth"});
 }
 
+function appliquerCorrections(){
+  if(!corrections.length)return;
+  corrections.forEach(c=>{
+    if(c.id==="longueur") {
+      const type=el("typeAntenne").value;
+      const f=num("frequence"), lambda=300/f;
+      el("longueur").value=(type==="efhw"?lambda/2:lambda/4).toFixed(2);
+    }
+    if(c.id==="longueurContrepoids") el("longueurContrepoids").value=(300/num("frequence")/4).toFixed(2);
+    if(c.id==="nombreContrepoids") el("nombreContrepoids").value="3";
+    if(c.id==="balun") el("balun").value="49:1";
+    if(c.id==="hauteur") el("hauteur").value=Math.max(num("hauteur"),300/num("frequence")/4).toFixed(2);
+  });
+  analyserAntenne();
 }
 
-
-/* =====================================================
-   ANALYSE
-===================================================== */
-
-function analyserAntenne() {
-
-
-correction = null;
-
-
-const type =
-document.getElementById("typeAntenne").value;
-
-
-const frequence =
-parseFloat(
-document.getElementById("frequence").value
-);
-
-
-const longueur =
-parseFloat(
-document.getElementById("longueur").value
-);
-
-
-const hauteur =
-parseFloat(
-document.getElementById("hauteur").value
-);
-
-
-const balun =
-document.getElementById("balun").value;
-
-
-const choke =
-document.getElementById("choke").value;
-
-
-const nombreContrepoids =
-parseInt(
-document.getElementById(
-"nombreContrepoids"
-).value
-);
-
-
-const longueurContrepoids =
-parseFloat(
-document.getElementById(
-"longueurContrepoids"
-).value
-);
-
-
-if (
-!frequence ||
-frequence <= 0 ||
-!longueur ||
-longueur <= 0
-) {
-
-alert(
-"Merci de vérifier les valeurs saisies."
-);
-
-return;
-
+function reinitialiser(){
+  el("typeAntenne").value="invertedV";
+  el("frequence").value="27.000";
+  el("longueur").value="5.56";
+  el("nombreContrepoids").value="0";
+  el("longueurContrepoids").value="0";
+  el("hauteur").value="5";
+  el("balun").value="1:1";
+  el("choke").value="non";
+  changerTypeAntenne();
+  el("resultat").style.display="none";
+  ["frequence","longueur","nombreContrepoids","longueurContrepoids","hauteur","balun","choke"].forEach(id=>marquer(id,null));
 }
-
-
-/* -----------------------------------------------------
-   CALCULS
------------------------------------------------------ */
-
-const lambda =
-300 / frequence;
-
-const quart =
-lambda / 4;
-
-const demi =
-lambda / 2;
-
-
-/* -----------------------------------------------------
-   AFFICHAGE DES CALCULS
------------------------------------------------------ */
-
-document.getElementById("lambda").textContent =
-lambda.toFixed(2) + " m";
-
-document.getElementById("quart").textContent =
-quart.toFixed(2) + " m";
-
-document.getElementById("demi").textContent =
-demi.toFixed(2) + " m";
-
-
-let score = 0;
-
-let details = [];
-
-let suggestions = [];
-
-
-/* =====================================================
-   DIPOLE
-===================================================== */
-
-if (type === "dipole") {
-
-
-const ecart =
-Math.abs(longueur - quart);
-
-
-const tolerance =
-quart * 0.05;
-
-
-if (ecart <= tolerance) {
-
-score += 5;
-
-details.push(
-"📡 Chaque brin est proche du quart d'onde."
-);
-
-}
-else {
-
-suggestions.push({
-
-element: "Longueur de chaque brin",
-
-actuel: longueur,
-
-conseille: quart,
-
-raison:
-"Pour un dipôle demi-onde, chaque brin constitue "
-+
-"approximativement un quart d'onde."
-
-});
-
-details.push(
-"⚠️ La longueur de chaque brin s'éloigne du quart d'onde."
-);
-
-}
-
-
-/* Balun */
-
-if (balun === "1:1") {
-
-score += 2;
-
-details.push(
-"🔌 Un balun 1:1 est sélectionné au point d'alimentation."
-);
-
-}
-else {
-
-details.push(
-"🔌 Aucun balun 1:1 n'est sélectionné."
-);
-
-}
-
-
-/* Pas de masse */
-
-details.push(
-"🌍 Aucun plan de masse n'est requis pour un dipôle."
-);
-
-
-details.push(
-"📐 Longueur totale théorique du dipôle : "
-+
-demi.toFixed(2)
-+
-" m."
-);
-
-}
-
-
-/* =====================================================
-   V INVERSÉ
-===================================================== */
-
-if (type === "invertedV") {
-
-
-const ecart =
-Math.abs(longueur - quart);
-
-
-const tolerance =
-quart * 0.05;
-
-
-if (ecart <= tolerance) {
-
-score += 5;
-
-details.push(
-"📡 Chaque brin est proche du quart d'onde."
-);
-
-}
-else {
-
-suggestions.push({
-
-element: "Longueur de chaque brin",
-
-actuel: longueur,
-
-conseille: quart,
-
-raison:
-"Dans un V inversé demi-onde, chaque brin "
-+
-"est approximativement un quart d'onde."
-
-});
-
-details.push(
-"⚠️ La longueur de chaque brin s'éloigne du quart d'onde."
-);
-
-}
-
-
-/* Balun */
-
-if (balun === "1:1") {
-
-score += 2;
-
-details.push(
-"🔌 Balun 1:1 sélectionné : configuration cohérente "
-+
-"avec un V inversé alimenté au centre."
-);
-
-}
-else {
-
-details.push(
-"⚠️ Un balun 1:1 est généralement un bon point "
-+
-"de départ pour limiter les courants de gaine."
-);
-
-}
-
-
-/* POINT ESSENTIEL */
-
-details.push(
-"🌍 Aucun plan de masse n'est requis pour un V inversé."
-);
-
-
-details.push(
-"📐 Longueur totale théorique du V inversé : "
-+
-demi.toFixed(2)
-+
-" m."
-);
-
-
-details.push(
-"📡 Les deux brins constituent les deux côtés "
-+
-"de l'antenne."
-);
-
-}
-
-
-/* =====================================================
-   VERTICAL 1/4 ONDE
-===================================================== */
-
-if (type === "vertical") {
-
-
-const ecart =
-Math.abs(longueur - quart);
-
-
-const tolerance =
-quart * 0.05;
-
-
-if (ecart <= tolerance) {
-
-score += 4;
-
-details.push(
-"📡 Le fil rayonnant est proche du quart d'onde."
-);
-
-}
-else {
-
-suggestions.push({
-
-element: "Fil rayonnant",
-
-actuel: longueur,
-
-conseille: quart,
-
-raison:
-"Pour une verticale quart d'onde, "
-+
-"le fil rayonnant est proche du quart d'onde."
-
-});
-
-details.push(
-"⚠️ Le fil rayonnant s'éloigne du quart d'onde."
-);
-
-}
-
-
-/* Contrepoids */
-
-if (
-nombreContrepoids > 0 &&
-longueurContrepoids > 0
-) {
-
-
-const ecartRadial =
-Math.abs(
-longueurContrepoids - quart
-);
-
-
-const toleranceRadial =
-quart * 0.08;
-
-
-if (
-ecartRadial <= toleranceRadial
-) {
-
-score += 4;
-
-details.push(
-"🌍 Les contrepoids sont proches du quart d'onde."
-);
-
-}
-else {
-
-suggestions.push({
-
-element:
-"Longueur de chaque contrepoids",
-
-actuel:
-longueurContrepoids,
-
-conseille:
-quart,
-
-raison:
-"Pour cette verticale, des contrepoids "
-+
-"proches du quart d'onde constituent "
-+
-"un bon point de départ expérimental."
-
-});
-
-details.push(
-"⚠️ Les contrepoids s'éloignent du quart d'onde."
-);
-
-}
-
-}
-else {
-
-details.push(
-"🔴 Une verticale quart d'onde nécessite "
-+
-"un chemin de retour RF : contrepoids, radiales "
-+
-"ou environnement de sol approprié."
-);
-
-}
-
-
-/* Balun */
-
-if (balun === "1:1") {
-
-details.push(
-"🔌 Balun 1:1 sélectionné."
-);
-
-}
-
-}
-
-
-/* =====================================================
-   EFHW
-===================================================== */
-
-if (type === "efhw") {
-
-
-const ecart =
-Math.abs(longueur - demi);
-
-
-const tolerance =
-demi * 0.05;
-
-
-if (ecart <= tolerance) {
-
-score += 5;
-
-details.push(
-"📡 Le fil est proche d'une demi-onde."
-);
-
-}
-else {
-
-suggestions.push({
-
-element:
-"Longueur totale du fil",
-
-actuel:
-longueur,
-
-conseille:
-demi,
-
-raison:
-"Une EFHW est généralement conçue autour "
-+
-"d'une longueur proche d'une demi-onde."
-
-});
-
-details.push(
-"⚠️ Le fil s'éloigne de la demi-onde."
-);
-
-}
-
-
-/* Transformateur */
-
-if (balun === "49:1") {
-
-score += 3;
-
-details.push(
-"🔌 Transformateur 49:1 sélectionné : "
-+
-"configuration cohérente avec une EFHW classique."
-);
-
-}
-else {
-
-details.push(
-"⚠️ Un transformateur adapté est généralement "
-+
-"nécessaire pour une EFHW."
-);
-
-suggestions.push({
-
-element:
-"Adaptation",
-
-actuel:
-balun === "aucun" ? "Aucun" : balun,
-
-conseille:
-"49:1",
-
-raison:
-"Un transformateur 49:1 constitue un point "
-+
-"de départ courant pour une EFHW demi-onde."
-});
-
-}
-
-
-/* Masse */
-
-details.push(
-"🌍 Aucun plan de masse de type verticale quart d'onde "
-+
-"n'est requis pour cette configuration."
-);
-
-}
-
-
-/* =====================================================
-   CHOKE
-===================================================== */
-
-if (choke === "oui") {
-
-details.push(
-"🛡️ Choke RF présent : il peut aider à limiter "
-+
-"les courants de gaine du coaxial."
-);
-
-}
-else {
-
-details.push(
-"🛡️ Aucun choke RF sélectionné."
-);
-
-}
-
-
-/* =====================================================
-   HAUTEUR
-===================================================== */
-
-details.push(
-"⬆️ Hauteur du point d'alimentation : "
-+
-hauteur.toFixed(2)
-+
-" m."
-);
-
-
-/* =====================================================
-   RESULTAT
-===================================================== */
-
-let titre;
-
-let message;
-
-let classe;
-
-
-if (
-suggestions.length === 0 &&
-score >= 7
-) {
-
-classe =
-"result-green";
-
-titre =
-"🟢 CONFIGURATION COHÉRENTE";
-
-message =
-"Les dimensions principales correspondent correctement "
-+
-"au type d'antenne sélectionné.";
-
-}
-else if (
-suggestions.length > 0 &&
-score >= 4
-) {
-
-classe =
-"result-orange";
-
-titre =
-"🟠 CONFIGURATION À AMÉLIORER";
-
-message =
-"L'antenne présente des éléments cohérents, "
-+
-"mais une ou plusieurs modifications sont proposées.";
-
-}
-else {
-
-classe =
-"result-red";
-
-titre =
-"🔴 CONFIGURATION À MODIFIER";
-
-message =
-"Plusieurs éléments doivent être vérifiés ou modifiés "
-+
-"avant de considérer cette configuration comme un "
-+
-"bon point de départ.";
-
-}
-
-
-/* =====================================================
-   AFFICHAGE RESULTAT
-===================================================== */
-
-const resultat =
-document.getElementById("resultat");
-
-const boite =
-document.getElementById("boiteResultat");
-
-boite.className =
-"result-box " + classe;
-
-
-document.getElementById(
-"titreResultat"
-).textContent =
-titre;
-
-
-document.getElementById(
-"messageResultat"
-).textContent =
-message;
-
-
-/* DETAILS */
-
-let html = "";
-
-details.forEach(
-function(detail) {
-
-html +=
-"<div>" +
-detail +
-"</div>";
-
-});
-
-
-html +=
-"<div>📻 Fréquence analysée : "
-+
-frequence.toFixed(3)
-+
-" MHz.</div>";
-
-
-document.getElementById(
-"detailsAnalyse"
-).innerHTML =
-html;
-
-
-/* =====================================================
-   SUGGESTIONS
-===================================================== */
-
-const zoneSuggestions =
-document.getElementById(
-"zoneSuggestions"
-);
-
-const zoneBonne =
-document.getElementById(
-"zoneBonneConfiguration"
-);
-
-const liste =
-document.getElementById(
-"listeSuggestions"
-);
-
-
-liste.innerHTML = "";
-
-
-if (suggestions.length > 0) {
-
-
-zoneSuggestions.classList.remove(
-"hidden"
-);
-
-zoneBonne.classList.add(
-"hidden"
-);
-
-
-suggestions.forEach(
-function(suggestion) {
-
-
-let actuel =
-typeof suggestion.actuel === "number"
-?
-suggestion.actuel.toFixed(2) + " m"
-:
-suggestion.actuel;
-
-
-let conseille =
-typeof suggestion.conseille === "number"
-?
-suggestion.conseille.toFixed(2) + " m"
-:
-suggestion.conseille;
-
-
-liste.innerHTML +=
-`
-<div class="modification">
-
-<div class="modification-title">
-🔧 ${suggestion.element}
-</div>
-
-<div>
-
-Actuellement :
-
-<span class="current">
-${actuel}
-</span>
-
-<span class="arrow">
-→
-</span>
-
-Conseillé :
-
-<span class="recommended">
-${conseille}
-</span>
-
-</div>
-
-<div class="reason">
-
-💡 ${suggestion.raison}
-
-</div>
-
-</div>
-`;
-
-}
-
-);
-
-}
-else {
-
-
-zoneSuggestions.classList.add(
-"hidden"
-);
-
-zoneBonne.classList.remove(
-"hidden"
-);
-
-}
-
-
-resultat.style.display =
-"block";
-
-
-resultat.scrollIntoView({
-behavior:"smooth"
-});
-
-}
-
-
-/* =====================================================
-   APPLIQUER LA PREMIERE CORRECTION
-===================================================== */
-
-function appliquerCorrection() {
-
-alert(
-"La fonction de correction automatique sera activée "
-+
-"pour la prochaine version."
-);
-
-}
-
-
-/* =====================================================
-   REINITIALISATION
-===================================================== */
-
-function reinitialiser() {
-
-document.getElementById(
-"typeAntenne"
-).value =
-"invertedV";
-
-
-document.getElementById(
-"frequence"
-).value =
-"27.555";
-
-
-document.getElementById(
-"longueur"
-).value =
-"2.72";
-
-
-document.getElementById(
-"nombreContrepoids"
-).value =
-"0";
-
-
-document.getElementById(
-"longueurContrepoids"
-).value =
-"0";
-
-
-document.getElementById(
-"hauteur"
-).value =
-"5";
-
-
-document.getElementById(
-"balun"
-).value =
-"1:1";
-
-
-document.getElementById(
-"choke"
-).value =
-"non";
-
 
 changerTypeAntenne();
-
-
-document.getElementById(
-"resultat"
-).style.display =
-"none";
-
-}
-
-
-/* =====================================================
-   INITIALISATION
-===================================================== */
-
-changerTypeAntenne();
-
 </script>
-
 </body>
-
 </html>
