@@ -1,1 +1,827 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<title>Analyseur d'antenne</title>
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        background: linear-gradient(135deg, #071a2e, #123b63);
+        color: #ffffff;
+        min-height: 100vh;
+    }
+
+    .container {
+        width: 92%;
+        max-width: 1050px;
+        margin: 35px auto;
+    }
+
+    .header {
+        background: linear-gradient(135deg, #164b7a, #216da8);
+        border-radius: 18px;
+        padding: 30px;
+        text-align: center;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+    }
+
+    .header h1 {
+        margin: 0 0 12px;
+        font-size: 34px;
+    }
+
+    .header p {
+        margin: 0;
+        font-size: 17px;
+        line-height: 1.5;
+    }
+
+    .card {
+        background: rgba(10, 32, 54, 0.96);
+        border-radius: 18px;
+        padding: 25px;
+        margin-top: 25px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+    }
+
+    .card h2 {
+        margin-top: 0;
+        color: #72c7ff;
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 18px;
+    }
+
+    .field {
+        display: flex;
+        flex-direction: column;
+    }
+
+    label {
+        font-weight: bold;
+        margin-bottom: 7px;
+    }
+
+    input,
+    select {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 9px;
+        font-size: 16px;
+        background: #ffffff;
+        color: #111111;
+    }
+
+    .unit {
+        font-size: 13px;
+        color: #a9c9df;
+        margin-top: 5px;
+    }
+
+    .buttons {
+        display: flex;
+        gap: 15px;
+        margin-top: 25px;
+        flex-wrap: wrap;
+    }
+
+    button {
+        border: none;
+        border-radius: 10px;
+        padding: 14px 24px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .analyser {
+        background: #18c86b;
+        color: white;
+    }
+
+    .analyser:hover {
+        background: #12a957;
+        transform: translateY(-1px);
+    }
+
+    .reset {
+        background: #53687a;
+        color: white;
+    }
+
+    .reset:hover {
+        background: #405362;
+    }
+
+    #resultat {
+        display: none;
+    }
+
+    .result-box {
+        border-radius: 15px;
+        padding: 22px;
+        margin-top: 15px;
+    }
+
+    .result-vert {
+        background: #0d5c38;
+        border: 2px solid #1fd17a;
+    }
+
+    .result-orange {
+        background: #694a0b;
+        border: 2px solid #f5b942;
+    }
+
+    .result-rouge {
+        background: #681d25;
+        border: 2px solid #ff6875;
+    }
+
+    .result-title {
+        font-size: 25px;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    .stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-top: 20px;
+    }
+
+    .stat {
+        background: rgba(255,255,255,0.08);
+        border-radius: 10px;
+        padding: 15px;
+        text-align: center;
+    }
+
+    .stat strong {
+        display: block;
+        font-size: 20px;
+        margin-bottom: 5px;
+    }
+
+    .analysis-list {
+        margin-top: 20px;
+        line-height: 1.7;
+    }
+
+    .analysis-list div {
+        padding: 7px 0;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .info {
+        background: rgba(57, 126, 180, 0.18);
+        border-left: 4px solid #55baff;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 20px;
+        line-height: 1.6;
+    }
+
+    .footer {
+        text-align: center;
+        color: #a9c9df;
+        font-size: 13px;
+        margin: 25px 0;
+    }
+
+    @media (max-width: 700px) {
+        .grid,
+        .stats {
+            grid-template-columns: 1fr;
+        }
+
+        .header h1 {
+            font-size: 27px;
+        }
+
+        .container {
+            width: 95%;
+        }
+    }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <h1>📡 Analyseur d'antenne</h1>
+        <p>
+            Entrez les caractéristiques de votre antenne et découvrez
+            si sa configuration peut fonctionner.
+        </p>
+    </div>
+
+    <div class="card">
+
+        <h2>🔧 Configuration de l'antenne</h2>
+
+        <div class="grid">
+
+            <div class="field">
+                <label for="frequence">Fréquence</label>
+                <input type="number" id="frequence" value="27" min="0.1" step="0.001">
+                <div class="unit">MHz</div>
+            </div>
+
+            <div class="field">
+                <label for="fil">Fil rayonnant</label>
+                <input type="number" id="fil" value="11" min="0" step="0.01">
+                <div class="unit">mètres</div>
+            </div>
+
+            <div class="field">
+                <label for="contrepoids">Nombre de contrepoids</label>
+                <input type="number" id="contrepoids" value="3" min="0" max="50" step="1">
+                <div class="unit">fils</div>
+            </div>
+
+            <div class="field">
+                <label for="longueurContrepoids">
+                    Longueur de chaque contrepoids
+                </label>
+                <input type="number" id="longueurContrepoids" value="3" min="0" step="0.01">
+                <div class="unit">mètres</div>
+            </div>
+
+            <div class="field">
+                <label for="hauteur">Hauteur du point d'alimentation</label>
+                <input type="number" id="hauteur" value="6" min="0" step="0.1">
+                <div class="unit">mètres</div>
+            </div>
+
+            <div class="field">
+                <label for="balun">Balun / transformateur</label>
+                <select id="balun">
+                    <option value="aucun">Aucun</option>
+                    <option value="1:1">Balun 1:1</option>
+                    <option value="9:1">Transformateur 9:1</option>
+                    <option value="49:1">Transformateur 49:1</option>
+                    <option value="autre">Autre</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="choke">Choke RF</label>
+                <select id="choke">
+                    <option value="non">Non</option>
+                    <option value="oui">Oui</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="position">Position du fil</label>
+                <select id="position">
+                    <option value="vertical">Vertical</option>
+                    <option value="incline">Incliné</option>
+                    <option value="horizontal">Horizontal</option>
+                    <option value="v">V inversé</option>
+                    <option value="autre">Autre</option>
+                </select>
+            </div>
+
+        </div>
+
+        <div class="buttons">
+
+            <button class="analyser" onclick="analyserAntenne()">
+                🔎 ANALYSER MON ANTENNE
+            </button>
+
+            <button class="reset" onclick="reinitialiser()">
+                ↺ Réinitialiser
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <div class="card" id="resultat">
+
+        <h2>📊 Résultat de l'analyse</h2>
+
+        <div id="boiteResultat" class="result-box">
+
+            <div id="titreResultat" class="result-title"></div>
+
+            <div id="messageResultat"></div>
+
+        </div>
+
+        <div class="stats">
+
+            <div class="stat">
+                <strong id="lambda">--</strong>
+                Longueur d'onde
+            </div>
+
+            <div class="stat">
+                <strong id="rapportFil">--</strong>
+                Fil / λ
+            </div>
+
+            <div class="stat">
+                <strong id="rapportContrepoids">--</strong>
+                Contrepoids / λ
+            </div>
+
+        </div>
+
+        <div class="analysis-list" id="detailsAnalyse"></div>
+
+        <div class="info">
+            ⚠️ <strong>Important :</strong>
+            cet outil donne une première analyse théorique.
+            Il ne peut pas garantir une bonne adaptation ou un ROS donné.
+            L'environnement, la hauteur, les objets métalliques, le sol,
+            les pertes et le système d'alimentation influencent fortement
+            le comportement réel de l'antenne.
+            <br><br>
+            📏 Le résultat réel doit être vérifié avec un mesureur de ROS
+            ou un analyseur d'antenne.
+        </div>
+
+    </div>
+
+
+    <div class="footer">
+        Analyseur d'antenne — outil radioamateur
+    </div>
+
+</div>
+
+
+<script>
+
+function analyserAntenne() {
+
+    const frequence =
+        parseFloat(document.getElementById("frequence").value);
+
+    const fil =
+        parseFloat(document.getElementById("fil").value);
+
+    const nombreContrepoids =
+        parseInt(document.getElementById("contrepoids").value);
+
+    const longueurContrepoids =
+        parseFloat(document.getElementById("longueurContrepoids").value);
+
+    const hauteur =
+        parseFloat(document.getElementById("hauteur").value);
+
+    const balun =
+        document.getElementById("balun").value;
+
+    const choke =
+        document.getElementById("choke").value;
+
+    const position =
+        document.getElementById("position").value;
+
+
+    /* Vérification des valeurs */
+
+    if (
+        !frequence ||
+        frequence <= 0 ||
+        fil < 0 ||
+        nombreContrepoids < 0 ||
+        longueurContrepoids < 0 ||
+        hauteur < 0
+    ) {
+
+        alert("Merci de vérifier les valeurs saisies.");
+        return;
+    }
+
+
+    /*
+       Calcul simplifié de la longueur d'onde.
+
+       λ = 300 / F
+
+       F en MHz
+       λ en mètres
+    */
+
+    const lambda = 300 / frequence;
+
+
+    /*
+       Rapport du fil par rapport à la longueur d'onde.
+    */
+
+    const rapportFil = fil / lambda;
+
+
+    /*
+       Rapport des contrepoids.
+    */
+
+    const rapportContrepoids =
+        longueurContrepoids / lambda;
+
+
+    /*
+       Longueur totale des contrepoids.
+    */
+
+    const longueurTotaleContrepoids =
+        nombreContrepoids * longueurContrepoids;
+
+
+    /*
+       On commence l'analyse.
+    */
+
+    let score = 0;
+
+    let remarques = [];
+
+
+    /* Fil rayonnant */
+
+    if (fil > 0) {
+
+        score += 2;
+
+        remarques.push(
+            "📏 Le fil rayonnant mesure " +
+            fil.toFixed(2) +
+            " m."
+        );
+
+    } else {
+
+        remarques.push(
+            "⚠️ Aucun fil rayonnant n'est renseigné."
+        );
+
+    }
+
+
+    /* Analyse du rapport du fil */
+
+    if (rapportFil > 0.20 && rapportFil < 0.30) {
+
+        remarques.push(
+            "📡 Le fil est proche d'un quart d'onde."
+        );
+
+        score += 2;
+
+    }
+    else if (rapportFil > 0.45 && rapportFil < 0.55) {
+
+        remarques.push(
+            "📡 Le fil est proche d'une demi-onde."
+        );
+
+        score += 2;
+
+    }
+    else if (rapportFil > 0.90 && rapportFil < 1.10) {
+
+        remarques.push(
+            "📡 Le fil est proche d'une longueur d'onde complète."
+        );
+
+        score += 2;
+
+    }
+    else if (rapportFil > 1.8 && rapportFil < 2.2) {
+
+        remarques.push(
+            "📡 Le fil est proche de deux longueurs d'onde."
+        );
+
+        score += 1;
+
+    }
+    else {
+
+        remarques.push(
+            "📐 La longueur du fil ne correspond pas directement " +
+            "à une longueur d'onde classique."
+        );
+
+    }
+
+
+    /* Contrepoids */
+
+    if (nombreContrepoids === 0) {
+
+        remarques.push(
+            "⚠️ Aucun contrepoids n'est renseigné."
+        );
+
+    }
+    else {
+
+        score += 1;
+
+        remarques.push(
+            "🌐 " +
+            nombreContrepoids +
+            " contrepoids de " +
+            longueurContrepoids.toFixed(2) +
+            " m sont prévus."
+        );
+
+        if (rapportContrepoids > 0.20 &&
+            rapportContrepoids < 0.30) {
+
+            remarques.push(
+                "📐 Chaque contrepoids est proche d'un quart d'onde."
+            );
+
+            score += 2;
+
+        }
+        else {
+
+            remarques.push(
+                "📐 La longueur des contrepoids devra être vérifiée " +
+                "expérimentalement."
+            );
+
+        }
+
+    }
+
+
+    /* Hauteur */
+
+    if (hauteur >= lambda / 4) {
+
+        remarques.push(
+            "⬆️ Le point d'alimentation est à une hauteur " +
+            "significative par rapport à la longueur d'onde."
+        );
+
+        score += 1;
+
+    }
+    else {
+
+        remarques.push(
+            "⬆️ L'antenne est relativement basse par rapport " +
+            "à la longueur d'onde."
+        );
+
+    }
+
+
+    /* Position */
+
+    if (position === "vertical") {
+
+        remarques.push(
+            "📡 Configuration verticale sélectionnée."
+        );
+
+    }
+    else if (position === "incline") {
+
+        remarques.push(
+            "📡 Le fil est incliné : son environnement influencera " +
+            "son comportement."
+        );
+
+    }
+    else if (position === "horizontal") {
+
+        remarques.push(
+            "📡 Configuration horizontale sélectionnée."
+        );
+
+    }
+    else if (position === "v") {
+
+        remarques.push(
+            "📡 Configuration en V inversé sélectionnée."
+        );
+
+    }
+
+
+    /* Balun */
+
+    if (balun === "aucun") {
+
+        remarques.push(
+            "🔌 Aucun balun ou transformateur n'est prévu."
+        );
+
+    }
+    else {
+
+        remarques.push(
+            "🔌 Adaptation sélectionnée : " +
+            balun +
+            "."
+        );
+
+    }
+
+
+    /* Choke */
+
+    if (choke === "oui") {
+
+        remarques.push(
+            "🛡️ Un choke RF est prévu : il peut aider à limiter " +
+            "les courants de gaine sur le coaxial."
+        );
+
+        score += 1;
+
+    }
+    else {
+
+        remarques.push(
+            "🛡️ Aucun choke RF n'est prévu."
+        );
+
+    }
+
+
+    /*
+       Détermination du résultat.
+    */
+
+    let classe;
+    let titre;
+    let message;
+
+
+    if (
+        score >= 7 &&
+        fil > 0 &&
+        nombreContrepoids > 0
+    ) {
+
+        classe = "result-vert";
+
+        titre = "🟢 CONFIGURATION POSSIBLE";
+
+        message =
+            "Les dimensions saisies forment une configuration " +
+            "qui peut fonctionner électriquement. " +
+            "Cela ne signifie toutefois pas que le ROS sera forcément bon.";
+
+    }
+    else if (
+        score >= 4 &&
+        fil > 0
+    ) {
+
+        classe = "result-orange";
+
+        titre = "🟠 CONFIGURATION À VÉRIFIER";
+
+        message =
+            "La configuration présente des éléments cohérents, " +
+            "mais plusieurs paramètres devront être vérifiés " +
+            "lors des essais.";
+
+    }
+    else {
+
+        classe = "result-rouge";
+
+        titre = "🔴 CONFIGURATION PEU FAVORABLE";
+
+        message =
+            "Les éléments renseignés ne permettent pas de considérer " +
+            "la configuration comme clairement favorable. " +
+            "Il faudrait modifier certains paramètres ou effectuer " +
+            "des essais supplémentaires.";
+
+    }
+
+
+    /*
+       Affichage.
+    */
+
+    const resultat =
+        document.getElementById("resultat");
+
+    const boite =
+        document.getElementById("boiteResultat");
+
+    boite.className =
+        "result-box " + classe;
+
+    document.getElementById("titreResultat").textContent =
+        titre;
+
+    document.getElementById("messageResultat").textContent =
+        message;
+
+
+    document.getElementById("lambda").textContent =
+        lambda.toFixed(2) + " m";
+
+    document.getElementById("rapportFil").textContent =
+        rapportFil.toFixed(2) + " λ";
+
+    document.getElementById("rapportContrepoids").textContent =
+        rapportContrepoids.toFixed(2) + " λ";
+
+
+    /*
+       Liste des observations.
+    */
+
+    let html = "";
+
+    remarques.forEach(function(remarque) {
+
+        html +=
+            "<div>" +
+            remarque +
+            "</div>";
+
+    });
+
+
+    html +=
+        "<div>📦 Longueur totale des contrepoids : " +
+        longueurTotaleContrepoids.toFixed(2) +
+        " m.</div>";
+
+    html +=
+        "<div>📐 Fréquence analysée : " +
+        frequence.toFixed(3) +
+        " MHz.</div>";
+
+    html +=
+        "<div>📏 Hauteur renseignée : " +
+        hauteur.toFixed(2) +
+        " m.</div>";
+
+
+    document.getElementById("detailsAnalyse").innerHTML =
+        html;
+
+
+    resultat.style.display = "block";
+
+
+    /*
+       On fait défiler doucement vers le résultat.
+    */
+
+    resultat.scrollIntoView({
+        behavior: "smooth"
+    });
+
+}
+
+
+/* Réinitialisation */
+
+function reinitialiser() {
+
+    document.getElementById("frequence").value = 27;
+    document.getElementById("fil").value = 11;
+    document.getElementById("contrepoids").value = 3;
+    document.getElementById("longueurContrepoids").value = 3;
+    document.getElementById("hauteur").value = 6;
+    document.getElementById("balun").value = "aucun";
+    document.getElementById("choke").value = "non";
+    document.getElementById("position").value = "vertical";
+
+    document.getElementById("resultat").style.display = "none";
+
+}
+
+</script>
+
+</body>
+</html>
